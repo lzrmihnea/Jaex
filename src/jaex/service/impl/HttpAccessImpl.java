@@ -28,8 +28,8 @@ public class HttpAccessImpl implements HttpAccess {
 	private static final String XTEAM_URL = "http://74.50.59.155:6000";
 	private static final String API_URL_USERS = "/api/users";
 	private static final String API_URL_PURCHASE_BY_USER_WITH_LIMIT = "/api/purchases/by_user/{0}?limit={1}";
-	private static final String API_URL_PURCHASE_BY_PRODUCT = "/api/purchases/by_product/:product_id";
-	private static final String API_URL_PRODUCT = "/api/products/:product_id";
+	private static final String API_URL_PURCHASE_BY_PRODUCT = "/api/purchases/by_product/{0}";
+	private static final String API_URL_PRODUCT = "/api/products/{0}";
 
 	@Override
 	public List<JaexUser> getUserList() throws JSONException, Exception {
@@ -69,11 +69,14 @@ public class HttpAccessImpl implements HttpAccess {
 			print("    " + purchaseOfUser);
 
 			// Purchases of product
+			// FIXME
 			List<JaexPurchase> purchasesOfProduct = getPurchasesOfProduct(
 					String.valueOf(purchaseOfUser.getProductId()));
 			print("      Other purchases of the same product");
 			for (JaexPurchase jaexPurchase : purchasesOfProduct) {
 				print("       " + jaexPurchase);
+				JaexProduct productPurchased = getProductInfo(String.valueOf(jaexPurchase.getProductId()));
+				print("       Product info: " + productPurchased);
 			}
 			print(" ");
 //			JaexProduct productBoughtByUser = getProductInfo(purchaseOfUser.getProductId());
@@ -84,29 +87,37 @@ public class HttpAccessImpl implements HttpAccess {
 		return purchasesOfUser;
 	}
 
-	public JaexProduct getProductInfo(int productId) throws Exception {
-		final JaexProduct jaexProduct = new JaexProduct(productId);
+	public JaexProduct getProductInfo(String productId) throws Exception {
+		JaexProduct jaexProduct = new JaexProduct(Integer.valueOf(productId));
 
-		String url = XTEAM_URL + API_URL_PRODUCT;
-		final JSONObject jsonObject = getJSONObjFromUrl(url);
-
-		print(jsonObject);
-		System.out.println("break");
+		String url = MessageFormat.format(XTEAM_URL + API_URL_PRODUCT, productId);
+		final JSONObject jsonObject = getJSONObjFromUrl(url).getJSONObject(JaexProduct.FIELD_PRODUCT);
+		jaexProduct = getProductFromJSONObject(jsonObject);
 
 		return jaexProduct;
 	}
 
+	private JaexProduct getProductFromJSONObject(JSONObject jsonObject) throws JSONException {
+		int id = getIntFromJSON(jsonObject, JaexProduct.FIELD_ID);
+		String face = jsonObject.getString(JaexProduct.FIELD_FACE);
+		long price = getLongFromJSON(jsonObject, JaexProduct.FIELD_PRICE);
+		int size = getIntFromJSON(jsonObject, JaexProduct.FIELD_SIZE);
+		return new JaexProduct(id, face, price, size);
+	}
+
 	@Override
-	public List<JaexPurchase> getPurchasesOfProduct(String product) throws Exception {
+	public List<JaexPurchase> getPurchasesOfProduct(String productId) throws Exception {
 		List<JaexPurchase> listOfPurchases = new ArrayList<>();
 
-		JSONArray jsonArray = getJSONArrayFromUrl(API_URL_PURCHASE_BY_PRODUCT, JaexPurchase.FIELD_PURCHASES);
+//		String url = MessageFormat.format(XTEAM_URL + API_URL_PRODUCT, );
+//		final JSONObject jsonObject = getJSONObjFromUrl(url);
+		JSONArray jsonArray = getJSONArrayFromUrl(API_URL_PURCHASE_BY_PRODUCT, JaexPurchase.FIELD_PURCHASES, productId);
 
 		JaexPurchase purchase;
 		for (int i = 0; i < jsonArray.length(); i++) {
 			purchase = getPurchaseFromJSONObject(jsonArray.getJSONObject(i), null);
 			listOfPurchases.add(purchase);
-			print(purchase);
+			print("     " + purchase);
 		}
 
 		return listOfPurchases;
@@ -133,6 +144,10 @@ public class HttpAccessImpl implements HttpAccess {
 
 	private Integer getIntFromJSON(JSONObject jsonObject, final String fieldId) throws JSONException {
 		return Integer.valueOf(jsonObject.getString(fieldId));
+	}
+	
+	private Long getLongFromJSON(JSONObject jsonObject, final String fieldId) throws JSONException {
+		return Long.valueOf(jsonObject.getString(fieldId));
 	}
 
 	private JSONArray getJSONArrayFromUrl(String apiUrl, String jsonFieldname, Object... urlParams) throws Exception {

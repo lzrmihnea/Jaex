@@ -8,6 +8,11 @@ import jaex.service.HttpAccess;
 import jaex.service.impl.HttpAccessImpl;
 
 public class ExampleURLConnXteam {
+	
+//	TODO
+//	x all functionalities in service
+//	- put them together for final functionality
+//	- chaching
 
 	public static void main(String[] args) throws Exception {
 
