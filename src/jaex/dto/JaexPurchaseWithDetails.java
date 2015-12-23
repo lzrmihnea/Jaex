@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-public class JaexPurchaseWithDetails {
+public class JaexPurchaseWithDetails implements Comparable<JaexPurchaseWithDetails> {
 	
 	public static final String FIELD_PURCHASES = "purchases";
 	public static final String FIELD_ID = "id";
@@ -84,6 +84,16 @@ public class JaexPurchaseWithDetails {
 
 	public void setPeopleWhoAlsoBoughtThis(Set<JaexUser> peopleWhoAlsoBoughtThis) {
 		this.peopleWhoAlsoBoughtThis = peopleWhoAlsoBoughtThis;
+	}
+
+//	Sorting is done in descending order. Greatest size goes first.
+	@Override
+	public int compareTo(JaexPurchaseWithDetails o2) {
+		int thisNbOfBuyers = this.getPeopleWhoAlsoBoughtThis().size();
+		int otherProdNbOfBuyers = o2.getPeopleWhoAlsoBoughtThis().size();
+		if(thisNbOfBuyers == otherProdNbOfBuyers)
+            return 0;
+        return thisNbOfBuyers < otherProdNbOfBuyers ? 1 : -1;
 	}
 
 }

@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.json.JSONException;
 
-import jaex.dto.JaexPurchase;
 import jaex.dto.JaexPurchaseWithDetails;
 import jaex.dto.JaexUser;
 

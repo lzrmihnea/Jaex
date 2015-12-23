@@ -6,6 +6,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -86,6 +87,7 @@ public class JaexServiceImpl implements JaexService {
 			JSONObject recentPurchaseJSON = fiveRecentPurchasesJSONArray.getJSONObject(indexOfPurchase);
 			purchasesOfUser.add(getRecentPurchaseForUserFromJSON(user, recentPurchaseJSON));
 		}
+		Collections.sort(purchasesOfUser);
 		return purchasesOfUser;
 	}
 

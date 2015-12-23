@@ -2,7 +2,6 @@ package jaex.main;
 
 import java.util.List;
 
-import jaex.dto.JaexPurchase;
 import jaex.dto.JaexPurchaseWithDetails;
 import jaex.dto.JaexUser;
 import jaex.service.JaexService;
