@@ -5,6 +5,7 @@ import java.util.List;
 import org.json.JSONException;
 
 import jaex.dto.JaexPurchase;
+import jaex.dto.JaexPurchaseDisplayed;
 import jaex.dto.JaexUser;
 
 public interface HttpAccess {
@@ -14,5 +15,7 @@ public interface HttpAccess {
 	List<JaexPurchase> getPurchasesForUser(JaexUser user, int limit) throws Exception;
 
 	List<JaexPurchase> getPurchasesOfProduct(String product) throws Exception;
+	
+	List<JaexPurchaseDisplayed> getRecentPurchasesForUser(JaexUser user) throws Exception;
 
 }

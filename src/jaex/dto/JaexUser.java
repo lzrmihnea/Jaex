@@ -5,6 +5,7 @@ import java.util.Formatter;
 public class JaexUser {
 
 	public static final String FIELD_USERS = "users";
+	public static final String FIELD_USER = "user";
 	public static final String FIELD_USERNAME = "username";
 	public static final String FIELD_EMAIL = "email";
 	
