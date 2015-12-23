@@ -1,11 +1,11 @@
 package jaex.dto;
 
-import java.util.ArrayList;
+import java.text.MessageFormat;
 import java.util.Date;
-import java.util.Formatter;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-public class JaexPurchaseDisplayed {
+public class JaexPurchaseWithDetails {
 	
 	public static final String FIELD_PURCHASES = "purchases";
 	public static final String FIELD_ID = "id";
@@ -13,19 +13,28 @@ public class JaexPurchaseDisplayed {
 	public static final String FIELD_USERNAME = "username";
 	public static final String FIELD_DATE = "date";
 	
-	private static final String JAEX_PURCHASE_TOSTRING_TEMPLATE1 = "Class%-25s productId%-10s user%-20s date%-10s";
-	private Formatter formatter;
+	private static final String JAEX_PURCHASE_TOSTRING_TEMPLATE = "Class{0} productId{1} user{2} date{3}";
+//	private static final String JAEX_PURCHASE_TOSTRING_TEMPLATE1 = "Class%-25s productId%-10s user%-20s date%-10s";
 	
 	private int id;
 	private JaexProduct product;
 	private JaexUser user;
 	private Date date;
 	
-	private List<JaexUser> peopleWhoAlsoBoughtThis = new ArrayList<>();
-	
-	public JaexPurchaseDisplayed() {
-		formatter = new Formatter();
+	private Set<JaexUser> peopleWhoAlsoBoughtThis = new HashSet<>();
+
+	public JaexPurchaseWithDetails() {
+		
 	}
+	
+	public JaexPurchaseWithDetails(int id, Date date, JaexUser user, JaexProduct product, Set<JaexUser> otherPeopleWhoBoughtThis) {
+		this.setId(id);
+		this.setDate(date);
+		this.setUser(user);
+		this.setProduct(product);
+		this.setPeopleWhoAlsoBoughtThis(otherPeopleWhoBoughtThis);
+	}
+	
 
 	public int getId() {
 		return id;
@@ -61,7 +70,7 @@ public class JaexPurchaseDisplayed {
 
 	@Override
 	public String toString() {
-		return formatter.format(JAEX_PURCHASE_TOSTRING_TEMPLATE1, inBrackets(this.getClass().getName()),
+		return MessageFormat.format(JAEX_PURCHASE_TOSTRING_TEMPLATE, inBrackets(this.getClass().getName()),
 				inBrackets(String.valueOf(product)), inBrackets(user.getUsername()), inBrackets(date.toString())).toString();
 	}
 
@@ -69,11 +78,11 @@ public class JaexPurchaseDisplayed {
 		return "[" + textToPlaceInBrackets + "]";
 	}
 
-	public List<JaexUser> getPeopleWhoAlsoBoughtThis() {
+	public Set<JaexUser> getPeopleWhoAlsoBoughtThis() {
 		return peopleWhoAlsoBoughtThis;
 	}
 
-	public void setPeopleWhoAlsoBoughtThis(List<JaexUser> peopleWhoAlsoBoughtThis) {
+	public void setPeopleWhoAlsoBoughtThis(Set<JaexUser> peopleWhoAlsoBoughtThis) {
 		this.peopleWhoAlsoBoughtThis = peopleWhoAlsoBoughtThis;
 	}
 

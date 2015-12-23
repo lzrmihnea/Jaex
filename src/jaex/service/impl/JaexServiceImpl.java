@@ -7,7 +7,9 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -17,11 +19,11 @@ import org.json.JSONObject;
 
 import jaex.dto.JaexProduct;
 import jaex.dto.JaexPurchase;
-import jaex.dto.JaexPurchaseDisplayed;
+import jaex.dto.JaexPurchaseWithDetails;
 import jaex.dto.JaexUser;
-import jaex.service.HttpAccess;
+import jaex.service.JaexService;
 
-public class HttpAccessImpl implements HttpAccess {
+public class JaexServiceImpl implements JaexService {
 
 	private static final String METHOD_GET = "GET";
 
@@ -74,48 +76,47 @@ public class HttpAccessImpl implements HttpAccess {
 	}
 
 	@Override
-	public List<JaexPurchaseDisplayed> getRecentPurchasesForUser(JaexUser user) throws Exception {
-		List<JaexPurchaseDisplayed> purchasesOfUser = new ArrayList<>();
+	public List<JaexPurchaseWithDetails> getRecentPurchasesForUser(JaexUser user) throws Exception {
+		List<JaexPurchaseWithDetails> purchasesOfUser = new ArrayList<>();
 
-		// 5 recent purchases of the user
-		JSONArray jsonArray = getJSONArrayFromUrl(API_URL_PURCHASE_BY_USER_WITH_LIMIT, JaexPurchase.FIELD_PURCHASES,
+		JSONArray fiveRecentPurchasesJSONArray = getJSONArrayFromUrl(API_URL_PURCHASE_BY_USER_WITH_LIMIT, JaexPurchase.FIELD_PURCHASES,
 				user.getUsername(), String.valueOf(RECENT_PURCHASES_NUMBER));
 
-		for (int indexOfPurchase = 0; indexOfPurchase < jsonArray.length(); indexOfPurchase++) {
-			JSONObject recentPurchaseJSON = jsonArray.getJSONObject(indexOfPurchase);
-			JaexPurchaseDisplayed jaexPurchase = new JaexPurchaseDisplayed();
-
-			int id = getIntFromJSON(recentPurchaseJSON, JaexPurchase.FIELD_ID);
-			Date dateOfPurchase = getDateFromJSON(recentPurchaseJSON, JaexPurchase.FIELD_DATE);
-			String username = recentPurchaseJSON.getString(JaexUser.FIELD_USERNAME);
-			JaexUser addedUser = (user != null ? user : new JaexUser(username, null));
-			int productId = getIntFromJSON(recentPurchaseJSON, JaexPurchase.FIELD_PRODUCT_ID);
-
-			String productIdAsString = String.valueOf(productId);
-
-			JaexProduct product = getProductInfo(productIdAsString);
-			List<JaexUser> peopleWhoBoughtThisProduct = getPeopleWhoBoughtThis(productIdAsString);
-
-			jaexPurchase.setId(id);
-			jaexPurchase.setDate(dateOfPurchase);
-			jaexPurchase.setUser(addedUser);
-			jaexPurchase.setProduct(product);
-			jaexPurchase.setPeopleWhoAlsoBoughtThis(peopleWhoBoughtThisProduct);
-
-			purchasesOfUser.add(jaexPurchase);
+		for (int indexOfPurchase = 0; indexOfPurchase < fiveRecentPurchasesJSONArray.length(); indexOfPurchase++) {
+			JSONObject recentPurchaseJSON = fiveRecentPurchasesJSONArray.getJSONObject(indexOfPurchase);
+			purchasesOfUser.add(getRecentPurchaseForUserFromJSON(user, recentPurchaseJSON));
 		}
 		return purchasesOfUser;
 	}
 
-	private List<JaexUser> getPeopleWhoBoughtThis(String productId) throws Exception {
-		List<JaexUser> peopleWhoBoughtThis = new ArrayList<>();
+	private JaexPurchaseWithDetails getRecentPurchaseForUserFromJSON(JaexUser user, JSONObject recentPurchaseJSON)
+			throws JSONException, Exception {
+		int id = getIntFromJSON(recentPurchaseJSON, JaexPurchase.FIELD_ID);
+		Date dateOfPurchase = getDateFromJSON(recentPurchaseJSON, JaexPurchase.FIELD_DATE);
+		String username = recentPurchaseJSON.getString(JaexUser.FIELD_USERNAME);
+		JaexUser addedUser = (user != null ? user : new JaexUser(username, null));
+		int productId = getIntFromJSON(recentPurchaseJSON, JaexPurchase.FIELD_PRODUCT_ID);
+
+		String productIdAsString = String.valueOf(productId);
+		JaexProduct product = getProductInfo(productIdAsString);
+		
+		Set<JaexUser> peopleWhoBoughtThisProduct = getOtherPeopleWhoBoughtThis(productIdAsString, user);
+
+		JaexPurchaseWithDetails jaexPurchaseDisplayed = new JaexPurchaseWithDetails(id, dateOfPurchase, addedUser, product, peopleWhoBoughtThisProduct);
+		return jaexPurchaseDisplayed;
+	}
+
+	private Set<JaexUser> getOtherPeopleWhoBoughtThis(String productId, JaexUser besidesThisUser) throws Exception {
+		Set<JaexUser> peopleWhoBoughtThis = new HashSet<>();
 		JSONArray jsonArrayOfPeopleWhoBoughtThis = getJSONArrayFromUrl(API_URL_PURCHASE_BY_PRODUCT,
 				JaexPurchase.FIELD_PURCHASES, productId);
 
 		for (int i = 0; i < jsonArrayOfPeopleWhoBoughtThis.length(); i++) {
 			String username = jsonArrayOfPeopleWhoBoughtThis.getJSONObject(i).getString(JaexUser.FIELD_USERNAME);
 			JaexUser personWhoBoughThis = getUser(username);
-			peopleWhoBoughtThis.add(personWhoBoughThis);
+			if(!personWhoBoughThis.equals(besidesThisUser)) {
+				peopleWhoBoughtThis.add(personWhoBoughThis);
+			}
 		}
 
 		return peopleWhoBoughtThis;
