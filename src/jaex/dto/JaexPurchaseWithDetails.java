@@ -13,6 +13,8 @@ public class JaexPurchaseWithDetails implements Comparable<JaexPurchaseWithDetai
 	public static final String FIELD_USERNAME = "username";
 	public static final String FIELD_DATE = "date";
 	
+	public static final String FIELD_RECENT = "recent";
+	
 	private static final String JAEX_PURCHASE_TOSTRING_TEMPLATE = "Class{0} productId{1} user{2} date{3}";
 //	private static final String JAEX_PURCHASE_TOSTRING_TEMPLATE1 = "Class%-25s productId%-10s user%-20s date%-10s";
 	
