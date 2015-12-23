@@ -14,6 +14,7 @@ public class ExampleURLConnXteam {
 //	x all functionalities in service
 //	- put them together for final functionality
 //	- build JSON
+//	- create API functionality
 //	- chaching
 
 	public static void main(String[] args) throws Exception {
